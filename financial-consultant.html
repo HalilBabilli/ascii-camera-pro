@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Financial Consultant Agent</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f1923 0%, #1a2a3a 50%, #0d2137 100%);
+            color: #e0e6ed;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            background: rgba(15, 25, 40, 0.95);
+            border-bottom: 1px solid rgba(46, 204, 113, 0.3);
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            backdrop-filter: blur(10px);
+        }
+
+        .logo {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: #fff;
+            flex-shrink: 0;
+        }
+
+        header h1 {
+            font-size: 1.4rem;
+            color: #2ecc71;
+        }
+
+        header p {
+            font-size: 0.8rem;
+            color: #7f8c9b;
+            margin-top: 2px;
+        }
+
+        .main-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: rgba(12, 20, 33, 0.95);
+            border-right: 1px solid rgba(46, 204, 113, 0.15);
+            padding: 20px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            overflow-y: auto;
+        }
+
+        .sidebar h3 {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: #2ecc71;
+            margin-bottom: 4px;
+        }
+
+        .topic-btn {
+            background: rgba(46, 204, 113, 0.08);
+            border: 1px solid rgba(46, 204, 113, 0.15);
+            border-radius: 10px;
+            padding: 12px 14px;
+            color: #c0cad6;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: left;
+        }
+
+        .topic-btn:hover {
+            background: rgba(46, 204, 113, 0.18);
+            border-color: rgba(46, 204, 113, 0.4);
+            color: #fff;
+        }
+
+        .topic-btn .topic-icon {
+            margin-right: 8px;
+        }
+
+        .disclaimer {
+            margin-top: auto;
+            padding: 12px;
+            background: rgba(231, 76, 60, 0.1);
+            border: 1px solid rgba(231, 76, 60, 0.25);
+            border-radius: 8px;
+            font-size: 0.7rem;
+            color: #e07a6a;
+            line-height: 1.5;
+        }
+
+        /* Chat Area */
+        .chat-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .message {
+            max-width: 720px;
+            line-height: 1.65;
+            font-size: 0.92rem;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message.agent {
+            background: rgba(46, 204, 113, 0.08);
+            border: 1px solid rgba(46, 204, 113, 0.15);
+            border-radius: 16px 16px 16px 4px;
+            padding: 16px 20px;
+        }
+
+        .message.user {
+            background: rgba(52, 152, 219, 0.12);
+            border: 1px solid rgba(52, 152, 219, 0.2);
+            border-radius: 16px 16px 4px 16px;
+            padding: 14px 18px;
+            align-self: flex-end;
+        }
+
+        .message .label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 6px;
+        }
+
+        .message.agent .label { color: #2ecc71; }
+        .message.user .label { color: #3498db; }
+
+        .message h4 {
+            color: #2ecc71;
+            margin: 12px 0 6px;
+            font-size: 0.95rem;
+        }
+
+        .message ul, .message ol {
+            padding-left: 20px;
+            margin: 6px 0;
+        }
+
+        .message li {
+            margin: 4px 0;
+        }
+
+        .message strong {
+            color: #2ecc71;
+        }
+
+        .message .formula {
+            background: rgba(0,0,0,0.3);
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            margin: 8px 0;
+            font-size: 0.85rem;
+            color: #7bed9f;
+        }
+
+        .typing-indicator {
+            display: none;
+            padding: 16px 20px;
+            max-width: 720px;
+        }
+
+        .typing-indicator.active {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background: #2ecc71;
+            border-radius: 50%;
+            animation: typingBounce 1.2s infinite;
+        }
+
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes typingBounce {
+            0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+            30% { transform: translateY(-6px); opacity: 1; }
+        }
+
+        /* Input Area */
+        .input-area {
+            padding: 16px 24px;
+            background: rgba(12, 20, 33, 0.9);
+            border-top: 1px solid rgba(46, 204, 113, 0.15);
+        }
+
+        .input-wrapper {
+            display: flex;
+            gap: 10px;
+            max-width: 760px;
+        }
+
+        .input-wrapper input {
+            flex: 1;
+            padding: 14px 18px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(46, 204, 113, 0.2);
+            border-radius: 12px;
+            color: #e0e6ed;
+            font-size: 0.92rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .input-wrapper input:focus {
+            border-color: rgba(46, 204, 113, 0.5);
+        }
+
+        .input-wrapper input::placeholder {
+            color: #556677;
+        }
+
+        .send-btn {
+            padding: 14px 24px;
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+            border: none;
+            border-radius: 12px;
+            color: #fff;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: transform 0.15s, box-shadow 0.2s;
+        }
+
+        .send-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(46, 204, 113, 0.3);
+        }
+
+        /* Calculator Panel */
+        .calc-panel {
+            width: 320px;
+            background: rgba(12, 20, 33, 0.95);
+            border-left: 1px solid rgba(46, 204, 113, 0.15);
+            padding: 20px 16px;
+            overflow-y: auto;
+            display: none;
+        }
+
+        .calc-panel.active {
+            display: block;
+        }
+
+        .calc-panel h3 {
+            font-size: 0.85rem;
+            color: #2ecc71;
+            margin-bottom: 16px;
+        }
+
+        .calc-group {
+            margin-bottom: 14px;
+        }
+
+        .calc-group label {
+            display: block;
+            font-size: 0.75rem;
+            color: #7f8c9b;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .calc-group input {
+            width: 100%;
+            padding: 10px 12px;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(46, 204, 113, 0.2);
+            border-radius: 8px;
+            color: #e0e6ed;
+            font-size: 0.88rem;
+            outline: none;
+        }
+
+        .calc-group input:focus {
+            border-color: rgba(46, 204, 113, 0.5);
+        }
+
+        .calc-btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+            border: none;
+            border-radius: 10px;
+            color: #fff;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 8px;
+            transition: box-shadow 0.2s;
+        }
+
+        .calc-btn:hover {
+            box-shadow: 0 4px 15px rgba(46, 204, 113, 0.3);
+        }
+
+        .calc-result {
+            margin-top: 16px;
+            padding: 14px;
+            background: rgba(46, 204, 113, 0.08);
+            border: 1px solid rgba(46, 204, 113, 0.2);
+            border-radius: 10px;
+            font-size: 0.85rem;
+            line-height: 1.6;
+            display: none;
+        }
+
+        .calc-result.active { display: block; }
+
+        .calc-result .big-number {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #2ecc71;
+            margin: 6px 0;
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .sidebar { display: none; }
+            .calc-panel { display: none !important; }
+        }
+
+        @media (max-width: 600px) {
+            header h1 { font-size: 1.1rem; }
+            .chat-messages { padding: 14px; }
+            .input-area { padding: 12px; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">$</div>
+        <div>
+            <h1>Financial Consultant Agent</h1>
+            <p>AI-powered personal finance advisor</p>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <h3>Quick Topics</h3>
+            <button class="topic-btn" onclick="askTopic('budgeting')">
+                <span class="topic-icon">&#128176;</span> Budgeting Strategies
+            </button>
+            <button class="topic-btn" onclick="askTopic('investing')">
+                <span class="topic-icon">&#128200;</span> Investment Basics
+            </button>
+            <button class="topic-btn" onclick="askTopic('debt')">
+                <span class="topic-icon">&#128179;</span> Debt Management
+            </button>
+            <button class="topic-btn" onclick="askTopic('retirement')">
+                <span class="topic-icon">&#127968;</span> Retirement Planning
+            </button>
+            <button class="topic-btn" onclick="askTopic('emergency')">
+                <span class="topic-icon">&#128737;</span> Emergency Fund
+            </button>
+            <button class="topic-btn" onclick="askTopic('tax')">
+                <span class="topic-icon">&#128203;</span> Tax Optimization
+            </button>
+            <button class="topic-btn" onclick="askTopic('savings')">
+                <span class="topic-icon">&#127856;</span> Savings Goals
+            </button>
+            <button class="topic-btn" onclick="askTopic('compound')">
+                <span class="topic-icon">&#128202;</span> Compound Interest Calculator
+            </button>
+            <button class="topic-btn" onclick="askTopic('loan')">
+                <span class="topic-icon">&#127974;</span> Loan Calculator
+            </button>
+
+            <div class="disclaimer">
+                <strong>Disclaimer:</strong> This agent provides general financial education and information only. It is not a substitute for professional financial advice. Always consult a licensed financial advisor for decisions about your specific situation.
+            </div>
+        </aside>
+
+        <!-- Chat -->
+        <section class="chat-area">
+            <div class="chat-messages" id="chatMessages">
+                <div class="message agent">
+                    <div class="label">Financial Consultant</div>
+                    Welcome! I'm your AI financial consultant. I can help you with:
+                    <ul>
+                        <li><strong>Budgeting</strong> &mdash; create and optimize your budget</li>
+                        <li><strong>Investing</strong> &mdash; understand stocks, bonds, ETFs, and more</li>
+                        <li><strong>Debt management</strong> &mdash; strategies to pay off debt faster</li>
+                        <li><strong>Retirement planning</strong> &mdash; plan for a comfortable future</li>
+                        <li><strong>Tax optimization</strong> &mdash; legal ways to minimize your tax burden</li>
+                        <li><strong>Calculators</strong> &mdash; compound interest, loan payments, and more</li>
+                    </ul>
+                    Ask me anything or pick a topic from the sidebar to get started!
+                </div>
+            </div>
+
+            <div class="typing-indicator" id="typingIndicator">
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+            </div>
+
+            <div class="input-area">
+                <div class="input-wrapper">
+                    <input type="text" id="userInput" placeholder="Ask about budgeting, investing, debt, retirement..."
+                           onkeydown="if(event.key==='Enter')sendMessage()">
+                    <button class="send-btn" onclick="sendMessage()">Send</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Calculator Panel -->
+        <aside class="calc-panel" id="calcPanel">
+            <div id="compoundCalc">
+                <h3>Compound Interest Calculator</h3>
+                <div class="calc-group">
+                    <label>Initial Investment ($)</label>
+                    <input type="number" id="calcPrincipal" value="10000">
+                </div>
+                <div class="calc-group">
+                    <label>Monthly Contribution ($)</label>
+                    <input type="number" id="calcMonthly" value="500">
+                </div>
+                <div class="calc-group">
+                    <label>Annual Interest Rate (%)</label>
+                    <input type="number" id="calcRate" value="7" step="0.1">
+                </div>
+                <div class="calc-group">
+                    <label>Time Period (Years)</label>
+                    <input type="number" id="calcYears" value="20">
+                </div>
+                <button class="calc-btn" onclick="calcCompound()">Calculate</button>
+                <div class="calc-result" id="compoundResult"></div>
+            </div>
+
+            <div id="loanCalc" style="display:none;">
+                <h3>Loan Payment Calculator</h3>
+                <div class="calc-group">
+                    <label>Loan Amount ($)</label>
+                    <input type="number" id="loanAmount" value="250000">
+                </div>
+                <div class="calc-group">
+                    <label>Annual Interest Rate (%)</label>
+                    <input type="number" id="loanRate" value="6.5" step="0.1">
+                </div>
+                <div class="calc-group">
+                    <label>Loan Term (Years)</label>
+                    <input type="number" id="loanYears" value="30">
+                </div>
+                <button class="calc-btn" onclick="calcLoan()">Calculate</button>
+                <div class="calc-result" id="loanResult"></div>
+            </div>
+        </aside>
+    </div>
+
+    <script>
+        // Financial knowledge base
+        const knowledgeBase = {
+            budgeting: {
+                keywords: ['budget', 'budgeting', 'spending', 'expense', 'income', 'track', 'money management', '50/30/20'],
+                response: `<h4>Budgeting Strategies</h4>
+                <p>Effective budgeting is the foundation of financial health. Here are proven strategies:</p>
+                <h4>The 50/30/20 Rule</h4>
+                <ul>
+                    <li><strong>50% Needs:</strong> Rent/mortgage, groceries, utilities, insurance, minimum debt payments</li>
+                    <li><strong>30% Wants:</strong> Dining out, entertainment, hobbies, subscriptions</li>
+                    <li><strong>20% Savings & Debt:</strong> Emergency fund, investments, extra debt payments</li>
+                </ul>
+                <h4>Zero-Based Budgeting</h4>
+                <p>Assign every dollar a purpose so income minus expenses equals zero. This ensures no money is "lost" to unplanned spending.</p>
+                <h4>Envelope Method</h4>
+                <p>Allocate cash into physical or digital envelopes for each spending category. When an envelope is empty, that category is done for the month.</p>
+                <h4>Tips for Success</h4>
+                <ul>
+                    <li>Track all expenses for at least one month before setting a budget</li>
+                    <li>Review and adjust your budget monthly</li>
+                    <li>Automate savings transfers on payday</li>
+                    <li>Build a small buffer (1-2% of income) for unexpected small expenses</li>
+                </ul>`
+            },
+            investing: {
+                keywords: ['invest', 'stock', 'bond', 'etf', 'mutual fund', 'portfolio', 'market', 'dividend', 'index fund', 'returns'],
+                response: `<h4>Investment Basics</h4>
+                <p>Investing is how you make your money work for you over time. Here are the key concepts:</p>
+                <h4>Asset Classes</h4>
+                <ul>
+                    <li><strong>Stocks:</strong> Ownership shares in companies. Higher risk, higher potential return (avg ~10%/year historically)</li>
+                    <li><strong>Bonds:</strong> Loans to governments/corporations. Lower risk, steady income (avg ~4-6%/year)</li>
+                    <li><strong>Index Funds/ETFs:</strong> Diversified baskets of stocks or bonds. Low fees, broad market exposure</li>
+                    <li><strong>Real Estate:</strong> Property or REITs. Provides income and appreciation</li>
+                </ul>
+                <h4>Key Principles</h4>
+                <ul>
+                    <li><strong>Diversification:</strong> Don't put all eggs in one basket. Spread across asset classes</li>
+                    <li><strong>Dollar-Cost Averaging:</strong> Invest a fixed amount regularly regardless of market conditions</li>
+                    <li><strong>Time in Market:</strong> Long-term investing beats trying to time the market</li>
+                    <li><strong>Risk Tolerance:</strong> Match investments to your comfort level and time horizon</li>
+                </ul>
+                <h4>Suggested Asset Allocation by Age</h4>
+                <p>A common rule of thumb: <em>subtract your age from 110</em> to get your stock allocation percentage.</p>
+                <div class="formula">Age 30 &rarr; 80% stocks, 20% bonds<br>Age 50 &rarr; 60% stocks, 40% bonds<br>Age 65 &rarr; 45% stocks, 55% bonds</div>
+                <p>Start early &mdash; even small amounts compound dramatically over decades.</p>`
+            },
+            debt: {
+                keywords: ['debt', 'loan', 'credit card', 'pay off', 'interest rate', 'mortgage', 'student loan', 'snowball', 'avalanche'],
+                response: `<h4>Debt Management Strategies</h4>
+                <p>Eliminating high-interest debt is one of the best "investments" you can make.</p>
+                <h4>Avalanche Method (Mathematically Optimal)</h4>
+                <ol>
+                    <li>Make minimum payments on all debts</li>
+                    <li>Put all extra money toward the <strong>highest interest rate</strong> debt</li>
+                    <li>Once paid off, roll that payment to the next highest rate</li>
+                </ol>
+                <p><strong>Pros:</strong> Saves the most money on interest overall.</p>
+                <h4>Snowball Method (Psychologically Motivating)</h4>
+                <ol>
+                    <li>Make minimum payments on all debts</li>
+                    <li>Put all extra money toward the <strong>smallest balance</strong> debt</li>
+                    <li>Once paid off, roll that payment to the next smallest balance</li>
+                </ol>
+                <p><strong>Pros:</strong> Quick wins build momentum and motivation.</p>
+                <h4>Other Strategies</h4>
+                <ul>
+                    <li><strong>Balance Transfer:</strong> Move high-interest credit card debt to a 0% APR card (watch for transfer fees)</li>
+                    <li><strong>Debt Consolidation:</strong> Combine multiple debts into one lower-rate loan</li>
+                    <li><strong>Refinancing:</strong> Replace existing loans with lower interest rate ones</li>
+                </ul>
+                <h4>Priority Order</h4>
+                <div class="formula">1. Credit cards (15-25% APR) &rarr; Pay aggressively<br>2. Personal loans (8-15%) &rarr; Pay down next<br>3. Student loans (4-7%) &rarr; Steady payments<br>4. Mortgage (3-7%) &rarr; Lowest priority (tax deductible)</div>`
+            },
+            retirement: {
+                keywords: ['retire', 'retirement', '401k', 'ira', 'roth', 'pension', 'social security', 'nest egg'],
+                response: `<h4>Retirement Planning</h4>
+                <p>The earlier you start, the less you need to save monthly thanks to compound growth.</p>
+                <h4>Retirement Accounts</h4>
+                <ul>
+                    <li><strong>401(k):</strong> Employer-sponsored, pre-tax contributions (2024 limit: $23,000). Always contribute enough to get the full employer match &mdash; it's free money!</li>
+                    <li><strong>Traditional IRA:</strong> Tax-deductible contributions, taxed on withdrawal (limit: $7,000/year)</li>
+                    <li><strong>Roth IRA:</strong> After-tax contributions, <em>tax-free</em> withdrawals in retirement (limit: $7,000/year). Best if you expect higher taxes later</li>
+                    <li><strong>HSA:</strong> Triple tax advantage for healthcare. Can be used as a stealth retirement account after 65</li>
+                </ul>
+                <h4>How Much Do You Need?</h4>
+                <p>The <strong>4% Rule</strong>: You can safely withdraw 4% of your portfolio per year in retirement.</p>
+                <div class="formula">Annual expenses &times; 25 = Target nest egg<br><br>Example: $60,000/year &times; 25 = $1,500,000 needed</div>
+                <h4>Savings Milestones by Age</h4>
+                <ul>
+                    <li><strong>Age 30:</strong> 1x your annual salary saved</li>
+                    <li><strong>Age 40:</strong> 3x your annual salary</li>
+                    <li><strong>Age 50:</strong> 6x your annual salary</li>
+                    <li><strong>Age 60:</strong> 8x your annual salary</li>
+                    <li><strong>Age 67:</strong> 10x your annual salary</li>
+                </ul>
+                <p>If you're behind, increase your savings rate by 1% each year until you catch up.</p>`
+            },
+            emergency: {
+                keywords: ['emergency', 'emergency fund', 'rainy day', 'safety net', 'unexpected expense'],
+                response: `<h4>Building an Emergency Fund</h4>
+                <p>An emergency fund is your financial safety net &mdash; it prevents unexpected events from derailing your financial plan.</p>
+                <h4>How Much to Save</h4>
+                <ul>
+                    <li><strong>Starter goal:</strong> $1,000 (covers most small emergencies)</li>
+                    <li><strong>Standard goal:</strong> 3-6 months of essential expenses</li>
+                    <li><strong>Enhanced goal:</strong> 6-12 months (for self-employed, single income, or volatile industries)</li>
+                </ul>
+                <h4>Where to Keep It</h4>
+                <ul>
+                    <li><strong>High-Yield Savings Account (HYSA):</strong> Currently earning 4-5% APY. Accessible, FDIC insured</li>
+                    <li><strong>Money Market Account:</strong> Similar rates, may offer check-writing</li>
+                    <li>Avoid: CDs (penalties for early withdrawal), stocks (too volatile)</li>
+                </ul>
+                <h4>How to Build It Fast</h4>
+                <ol>
+                    <li>Automate a monthly transfer on payday</li>
+                    <li>Direct any windfalls (tax refunds, bonuses) to the fund</li>
+                    <li>Temporarily reduce discretionary spending</li>
+                    <li>Sell unused items</li>
+                    <li>Use the "round-up" technique on purchases</li>
+                </ol>
+                <p><strong>Remember:</strong> Only use your emergency fund for true emergencies &mdash; job loss, medical bills, urgent repairs. Replenish it as soon as possible after using it.</p>`
+            },
+            tax: {
+                keywords: ['tax', 'deduction', 'credit', 'write off', 'irs', 'filing', 'refund', 'bracket'],
+                response: `<h4>Tax Optimization Strategies</h4>
+                <p>Legal strategies to minimize your tax burden and keep more of your money.</p>
+                <h4>Tax-Advantaged Accounts</h4>
+                <ul>
+                    <li><strong>401(k)/Traditional IRA:</strong> Reduces taxable income now</li>
+                    <li><strong>Roth IRA:</strong> Tax-free growth and withdrawals</li>
+                    <li><strong>HSA:</strong> Triple tax benefit (deductible, grows tax-free, tax-free withdrawals for medical)</li>
+                    <li><strong>529 Plan:</strong> Tax-free growth for education expenses</li>
+                </ul>
+                <h4>Common Deductions</h4>
+                <ul>
+                    <li>Mortgage interest (itemized)</li>
+                    <li>State and local taxes up to $10,000 (SALT)</li>
+                    <li>Charitable donations</li>
+                    <li>Home office expenses (self-employed)</li>
+                    <li>Student loan interest (up to $2,500)</li>
+                </ul>
+                <h4>Tax Credits (More Valuable Than Deductions)</h4>
+                <ul>
+                    <li><strong>Child Tax Credit:</strong> Up to $2,000 per child</li>
+                    <li><strong>Earned Income Tax Credit:</strong> Up to $7,430 for qualifying families</li>
+                    <li><strong>Education Credits:</strong> American Opportunity ($2,500) or Lifetime Learning ($2,000)</li>
+                    <li><strong>EV Tax Credit:</strong> Up to $7,500 for qualifying vehicles</li>
+                </ul>
+                <h4>Key Strategy: Tax-Loss Harvesting</h4>
+                <p>Sell investments at a loss to offset capital gains. You can deduct up to $3,000 in net losses against ordinary income per year, carrying forward any excess.</p>`
+            },
+            savings: {
+                keywords: ['save', 'saving', 'savings goal', 'down payment', 'vacation fund', 'high yield', 'hysa'],
+                response: `<h4>Savings Goal Strategies</h4>
+                <p>Clear goals with specific targets and timelines dramatically improve savings success.</p>
+                <h4>Setting SMART Savings Goals</h4>
+                <ul>
+                    <li><strong>Specific:</strong> "Save $15,000 for a house down payment" vs. "save more money"</li>
+                    <li><strong>Measurable:</strong> Track progress monthly</li>
+                    <li><strong>Achievable:</strong> Based on your income and expenses</li>
+                    <li><strong>Relevant:</strong> Aligns with your life priorities</li>
+                    <li><strong>Time-bound:</strong> "By December 2027"</li>
+                </ul>
+                <h4>Monthly Savings Targets</h4>
+                <div class="formula">Goal amount &divide; Months until deadline = Monthly savings needed<br><br>$15,000 &divide; 24 months = $625/month</div>
+                <h4>Where to Save</h4>
+                <ul>
+                    <li><strong>Short-term (1-2 years):</strong> High-yield savings account (4-5% APY)</li>
+                    <li><strong>Medium-term (2-5 years):</strong> CDs, Treasury bills, short-term bond funds</li>
+                    <li><strong>Long-term (5+ years):</strong> Balanced investment portfolio</li>
+                </ul>
+                <h4>Automate Everything</h4>
+                <p>Set up automatic transfers to separate savings accounts for each goal. "Pay yourself first" by saving on payday before spending.</p>`
+            },
+            compound: {
+                keywords: ['compound interest', 'compound', 'calculator', 'growth', 'compounding'],
+                response: `<h4>The Power of Compound Interest</h4>
+                <p>Albert Einstein reportedly called compound interest "the eighth wonder of the world." Here's why:</p>
+                <h4>How It Works</h4>
+                <p>Compound interest earns interest on your interest. The longer your money compounds, the faster it grows.</p>
+                <div class="formula">Future Value = P(1 + r/n)^(nt) + PMT &times; [((1 + r/n)^(nt) - 1) / (r/n)]<br><br>P = Principal, r = annual rate, n = compounds per year, t = years, PMT = regular contribution</div>
+                <h4>Real Example</h4>
+                <p>Investing <strong>$500/month</strong> at <strong>7% annual return</strong>:</p>
+                <ul>
+                    <li>After <strong>10 years:</strong> $86,542 (invested $60,000)</li>
+                    <li>After <strong>20 years:</strong> $260,464 (invested $120,000)</li>
+                    <li>After <strong>30 years:</strong> $606,438 (invested $180,000)</li>
+                </ul>
+                <p>In 30 years, you'd earn <strong>$426,438 in pure interest</strong> &mdash; more than double your contributions!</p>
+                <h4>The Rule of 72</h4>
+                <div class="formula">72 &divide; Annual return rate = Years to double your money<br><br>72 &divide; 7% = ~10.3 years to double</div>
+                <p>Try the compound interest calculator in the side panel to run your own numbers!</p>`
+            },
+            loan: {
+                keywords: ['loan calculator', 'mortgage calculator', 'monthly payment', 'amortization', 'car loan', 'home loan'],
+                response: `<h4>Understanding Loan Payments</h4>
+                <p>Knowing how loans work helps you make smarter borrowing decisions.</p>
+                <h4>Loan Payment Formula</h4>
+                <div class="formula">Monthly Payment = P &times; [r(1+r)^n] / [(1+r)^n - 1]<br><br>P = loan amount, r = monthly rate, n = total payments</div>
+                <h4>Common Loan Types</h4>
+                <ul>
+                    <li><strong>Mortgage (30-year):</strong> Typically 6-7% APR. $250K loan &asymp; $1,580/month</li>
+                    <li><strong>Mortgage (15-year):</strong> Lower rate (~5.5-6.5%). Higher payments but far less total interest</li>
+                    <li><strong>Auto Loan (5-year):</strong> 5-8% APR. $30K loan &asymp; $566/month</li>
+                    <li><strong>Student Loans:</strong> Federal 5-7%, Private 4-14%</li>
+                </ul>
+                <h4>Money-Saving Tips</h4>
+                <ul>
+                    <li><strong>Extra payments:</strong> Even $100/month extra on a mortgage can save tens of thousands in interest</li>
+                    <li><strong>Biweekly payments:</strong> Pay half the monthly amount every two weeks (equals 13 monthly payments/year)</li>
+                    <li><strong>Refinance:</strong> If rates drop 1%+ below your current rate, consider refinancing</li>
+                    <li><strong>Shorter terms:</strong> A 15-year mortgage costs much less total than a 30-year</li>
+                </ul>
+                <p>Use the loan calculator in the side panel to compare different scenarios!</p>`
+            },
+            general: {
+                keywords: [],
+                response: `<h4>Financial Guidance</h4>
+                <p>Here are some general principles that apply to almost every financial situation:</p>
+                <h4>The Financial Priority Ladder</h4>
+                <ol>
+                    <li><strong>Budget basics:</strong> Track income and expenses</li>
+                    <li><strong>Employer 401(k) match:</strong> Always get the full match (free money!)</li>
+                    <li><strong>Emergency fund:</strong> Build to $1,000, then 3-6 months of expenses</li>
+                    <li><strong>High-interest debt:</strong> Pay off credit cards and personal loans</li>
+                    <li><strong>Max retirement accounts:</strong> 401(k), IRA, HSA</li>
+                    <li><strong>Invest in taxable accounts:</strong> Index funds for long-term goals</li>
+                    <li><strong>Extra mortgage payments:</strong> If desired, pay down home early</li>
+                </ol>
+                <h4>Rules of Thumb</h4>
+                <ul>
+                    <li>Save at least <strong>15-20%</strong> of gross income</li>
+                    <li>Housing should be under <strong>28%</strong> of gross income</li>
+                    <li>Total debt payments under <strong>36%</strong> of gross income</li>
+                    <li>Car costs under <strong>10%</strong> of gross income</li>
+                    <li>Keep an emergency fund of <strong>3-6 months</strong> expenses</li>
+                </ul>
+                <p>Feel free to ask about any specific financial topic, and I'll provide detailed guidance!</p>`
+            }
+        };
+
+        const chatMessages = document.getElementById('chatMessages');
+        const userInput = document.getElementById('userInput');
+        const typingIndicator = document.getElementById('typingIndicator');
+        const calcPanel = document.getElementById('calcPanel');
+
+        function addMessage(content, type) {
+            const msg = document.createElement('div');
+            msg.className = `message ${type}`;
+            const label = type === 'agent' ? 'Financial Consultant' : 'You';
+            msg.innerHTML = `<div class="label">${label}</div>${content}`;
+            chatMessages.appendChild(msg);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function showTyping() {
+            typingIndicator.classList.add('active');
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function hideTyping() {
+            typingIndicator.classList.remove('active');
+        }
+
+        function matchTopic(input) {
+            const lower = input.toLowerCase();
+            let bestMatch = null;
+            let bestScore = 0;
+
+            for (const [topic, data] of Object.entries(knowledgeBase)) {
+                if (topic === 'general') continue;
+                for (const keyword of data.keywords) {
+                    if (lower.includes(keyword)) {
+                        const score = keyword.length;
+                        if (score > bestScore) {
+                            bestScore = score;
+                            bestMatch = topic;
+                        }
+                    }
+                }
+            }
+            return bestMatch || 'general';
+        }
+
+        function sendMessage() {
+            const text = userInput.value.trim();
+            if (!text) return;
+
+            addMessage(text, 'user');
+            userInput.value = '';
+
+            showTyping();
+
+            const topic = matchTopic(text);
+
+            // Show calculator panel for relevant topics
+            if (topic === 'compound') {
+                calcPanel.classList.add('active');
+                document.getElementById('compoundCalc').style.display = 'block';
+                document.getElementById('loanCalc').style.display = 'none';
+            } else if (topic === 'loan') {
+                calcPanel.classList.add('active');
+                document.getElementById('compoundCalc').style.display = 'none';
+                document.getElementById('loanCalc').style.display = 'block';
+            }
+
+            // Simulate typing delay
+            const delay = 600 + Math.random() * 800;
+            setTimeout(() => {
+                hideTyping();
+                addMessage(knowledgeBase[topic].response, 'agent');
+            }, delay);
+        }
+
+        function askTopic(topic) {
+            const labels = {
+                budgeting: 'Tell me about budgeting strategies',
+                investing: 'How should I start investing?',
+                debt: 'What are the best ways to manage debt?',
+                retirement: 'Help me plan for retirement',
+                emergency: 'How do I build an emergency fund?',
+                tax: 'What tax optimization strategies should I know?',
+                savings: 'How do I set effective savings goals?',
+                compound: 'Explain compound interest to me',
+                loan: 'Help me understand loan payments'
+            };
+
+            userInput.value = labels[topic] || 'Tell me more about ' + topic;
+            sendMessage();
+        }
+
+        // Compound interest calculator
+        function calcCompound() {
+            const principal = parseFloat(document.getElementById('calcPrincipal').value) || 0;
+            const monthly = parseFloat(document.getElementById('calcMonthly').value) || 0;
+            const rate = parseFloat(document.getElementById('calcRate').value) / 100;
+            const years = parseInt(document.getElementById('calcYears').value) || 0;
+
+            const monthlyRate = rate / 12;
+            const months = years * 12;
+
+            let balance = principal;
+            let totalContributed = principal;
+
+            for (let i = 0; i < months; i++) {
+                balance = balance * (1 + monthlyRate) + monthly;
+                totalContributed += monthly;
+            }
+
+            const totalInterest = balance - totalContributed;
+
+            const resultEl = document.getElementById('compoundResult');
+            resultEl.classList.add('active');
+            resultEl.innerHTML = `
+                <div>Future Value:</div>
+                <div class="big-number">$${balance.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
+                <div>Total Contributed: <strong>$${totalContributed.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</strong></div>
+                <div>Interest Earned: <strong style="color:#2ecc71">$${totalInterest.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</strong></div>
+                <div style="margin-top:8px;font-size:0.78rem;color:#7f8c9b">
+                    ${years} years at ${(rate*100).toFixed(1)}% annual return
+                </div>
+            `;
+        }
+
+        // Loan calculator
+        function calcLoan() {
+            const amount = parseFloat(document.getElementById('loanAmount').value) || 0;
+            const rate = parseFloat(document.getElementById('loanRate').value) / 100 / 12;
+            const payments = parseInt(document.getElementById('loanYears').value) * 12 || 1;
+
+            let monthlyPayment;
+            if (rate === 0) {
+                monthlyPayment = amount / payments;
+            } else {
+                monthlyPayment = amount * (rate * Math.pow(1 + rate, payments)) / (Math.pow(1 + rate, payments) - 1);
+            }
+
+            const totalPaid = monthlyPayment * payments;
+            const totalInterest = totalPaid - amount;
+
+            const resultEl = document.getElementById('loanResult');
+            resultEl.classList.add('active');
+            resultEl.innerHTML = `
+                <div>Monthly Payment:</div>
+                <div class="big-number">$${monthlyPayment.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
+                <div>Total Paid: <strong>$${totalPaid.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</strong></div>
+                <div>Total Interest: <strong style="color:#e74c3c">$${totalInterest.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</strong></div>
+                <div style="margin-top:8px;font-size:0.78rem;color:#7f8c9b">
+                    ${document.getElementById('loanYears').value}-year loan at ${document.getElementById('loanRate').value}% APR
+                </div>
+            `;
+        }
+
+        // Focus input on load
+        userInput.focus();
+    </script>
+</body>
+</html>
