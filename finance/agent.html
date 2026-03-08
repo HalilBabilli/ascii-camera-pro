@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finance Agent</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0f0f1a;
+            color: #e0e0e0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            padding: 16px 24px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .header h1 {
+            font-size: 1.4rem;
+            background: linear-gradient(90deg, #4facfe, #00f2fe);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .agent-badge {
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            background: rgba(0, 230, 118, 0.15);
+            color: #00e676;
+            border: 1px solid rgba(0, 230, 118, 0.3);
+        }
+
+        .header-link {
+            color: #4facfe;
+            text-decoration: none;
+            font-size: 0.85rem;
+        }
+
+        .header-link:hover {
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .app {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+            height: calc(100vh - 57px);
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: #12121f;
+            border-right: 1px solid rgba(255, 255, 255, 0.06);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar { display: none; }
+        }
+
+        .sidebar-section {
+            padding: 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        .sidebar-title {
+            font-size: 0.7rem;
+            color: #555;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        .quick-action {
+            display: block;
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.02);
+            color: #ccc;
+            font-size: 0.85rem;
+            cursor: pointer;
+            text-align: left;
+            margin-bottom: 6px;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        .quick-action:hover {
+            background: rgba(79, 172, 254, 0.1);
+            border-color: rgba(79, 172, 254, 0.3);
+            color: #4facfe;
+        }
+
+        .quick-action-icon {
+            margin-right: 8px;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            font-size: 0.85rem;
+        }
+
+        .stat-label { color: #666; }
+        .stat-value { font-weight: 600; }
+        .stat-value.positive { color: #00e676; }
+        .stat-value.negative { color: #ff5252; }
+        .stat-value.neutral { color: #4facfe; }
+
+        /* Chat Area */
+        .chat-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .message {
+            max-width: 720px;
+            display: flex;
+            gap: 12px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message.agent {
+            align-self: flex-start;
+        }
+
+        .message.user {
+            align-self: flex-end;
+            flex-direction: row-reverse;
+        }
+
+        .message-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            flex-shrink: 0;
+        }
+
+        .agent .message-avatar {
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+            color: #0f0f1a;
+            font-weight: 700;
+        }
+
+        .user .message-avatar {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ccc;
+        }
+
+        .message-bubble {
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        .agent .message-bubble {
+            background: #1a1a2e;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            color: #ddd;
+        }
+
+        .user .message-bubble {
+            background: rgba(79, 172, 254, 0.15);
+            border: 1px solid rgba(79, 172, 254, 0.2);
+            color: #e0e0e0;
+        }
+
+        .message-bubble strong { color: #4facfe; }
+
+        .message-bubble table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+            font-size: 0.85rem;
+        }
+
+        .message-bubble th {
+            text-align: left;
+            padding: 6px 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            color: #888;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .message-bubble td {
+            padding: 6px 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+        }
+
+        .message-bubble ul, .message-bubble ol {
+            margin: 8px 0;
+            padding-left: 20px;
+        }
+
+        .message-bubble li {
+            margin-bottom: 4px;
+        }
+
+        .message-bubble .insight-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 8px;
+            padding: 12px;
+            margin: 10px 0;
+        }
+
+        .message-bubble .insight-card .insight-title {
+            font-weight: 600;
+            color: #4facfe;
+            margin-bottom: 6px;
+            font-size: 0.85rem;
+        }
+
+        .message-bubble .highlight-positive { color: #00e676; font-weight: 600; }
+        .message-bubble .highlight-negative { color: #ff5252; font-weight: 600; }
+        .message-bubble .highlight-warn { color: #ffab40; font-weight: 600; }
+        .message-bubble .highlight-info { color: #4facfe; font-weight: 600; }
+
+        .typing-indicator {
+            display: flex;
+            gap: 4px;
+            padding: 8px 0;
+        }
+
+        .typing-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #4facfe;
+            animation: typingBounce 1.2s infinite;
+        }
+
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes typingBounce {
+            0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+            30% { transform: translateY(-6px); opacity: 1; }
+        }
+
+        /* Input Area */
+        .input-area {
+            padding: 16px 24px;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            background: #12121f;
+        }
+
+        .input-wrapper {
+            max-width: 720px;
+            margin: 0 auto;
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            background: #0f0f1a;
+            color: #e0e0e0;
+            font-size: 0.95rem;
+            font-family: inherit;
+            resize: none;
+            outline: none;
+            min-height: 46px;
+            max-height: 120px;
+        }
+
+        .chat-input:focus {
+            border-color: #4facfe;
+        }
+
+        .chat-input::placeholder {
+            color: #555;
+        }
+
+        .send-btn {
+            width: 46px;
+            height: 46px;
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+            color: #0f0f1a;
+            font-size: 1.2rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+
+        .send-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(79, 172, 254, 0.3);
+        }
+
+        .send-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-left">
+            <h1>Finance Agent</h1>
+            <span class="agent-badge">AI Assistant</span>
+        </div>
+        <a href="index.html" class="header-link">Back to Dashboard</a>
+    </div>
+
+    <div class="app">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-section">
+                <div class="sidebar-title">Quick Actions</div>
+                <button class="quick-action" onclick="sendQuickAction('Give me a financial summary')">
+                    <span class="quick-action-icon">&#x1f4ca;</span> Financial Summary
+                </button>
+                <button class="quick-action" onclick="sendQuickAction('Analyze my spending habits')">
+                    <span class="quick-action-icon">&#x1f50d;</span> Spending Analysis
+                </button>
+                <button class="quick-action" onclick="sendQuickAction('How can I save more money?')">
+                    <span class="quick-action-icon">&#x1f4b0;</span> Savings Tips
+                </button>
+                <button class="quick-action" onclick="sendQuickAction('Show my budget status')">
+                    <span class="quick-action-icon">&#x1f4cb;</span> Budget Status
+                </button>
+                <button class="quick-action" onclick="sendQuickAction('What are my top expenses?')">
+                    <span class="quick-action-icon">&#x1f4b8;</span> Top Expenses
+                </button>
+                <button class="quick-action" onclick="sendQuickAction('Show income vs expenses trend')">
+                    <span class="quick-action-icon">&#x1f4c8;</span> Income vs Expenses
+                </button>
+                <button class="quick-action" onclick="sendQuickAction('Give me a monthly breakdown')">
+                    <span class="quick-action-icon">&#x1f4c5;</span> Monthly Breakdown
+                </button>
+                <button class="quick-action" onclick="sendQuickAction('Any financial warnings?')">
+                    <span class="quick-action-icon">&#x26a0;</span> Financial Alerts
+                </button>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-title">Account Snapshot</div>
+                <div class="stat-row">
+                    <span class="stat-label">Income</span>
+                    <span class="stat-value positive" id="side-income">$0.00</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Expenses</span>
+                    <span class="stat-value negative" id="side-expenses">$0.00</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Balance</span>
+                    <span class="stat-value neutral" id="side-balance">$0.00</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Transactions</span>
+                    <span class="stat-value neutral" id="side-count">0</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chat Area -->
+        <div class="chat-area">
+            <div class="messages" id="messages"></div>
+
+            <div class="input-area">
+                <div class="input-wrapper">
+                    <textarea class="chat-input" id="chat-input"
+                        placeholder="Ask about your finances..."
+                        rows="1"></textarea>
+                    <button class="send-btn" id="send-btn" onclick="handleSend()">&#x27A4;</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Load transactions from shared localStorage
+        function getTransactions() {
+            return JSON.parse(localStorage.getItem('finance_transactions') || '[]');
+        }
+
+        function formatCurrency(n) {
+            return '$' + Math.abs(n).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        }
+
+        // Compute financial data
+        function getFinancialData() {
+            const txs = getTransactions();
+            const now = new Date();
+            const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+            const lastMonth = (() => {
+                const d = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+                return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+            })();
+
+            const totalIncome = txs.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
+            const totalExpenses = txs.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
+            const balance = totalIncome - totalExpenses;
+            const savingsRate = totalIncome > 0 ? ((totalIncome - totalExpenses) / totalIncome * 100) : 0;
+
+            // Current month
+            const cmIncome = txs.filter(t => t.type === 'income' && t.date.startsWith(currentMonth)).reduce((s, t) => s + t.amount, 0);
+            const cmExpenses = txs.filter(t => t.type === 'expense' && t.date.startsWith(currentMonth)).reduce((s, t) => s + t.amount, 0);
+
+            // Last month
+            const lmIncome = txs.filter(t => t.type === 'income' && t.date.startsWith(lastMonth)).reduce((s, t) => s + t.amount, 0);
+            const lmExpenses = txs.filter(t => t.type === 'expense' && t.date.startsWith(lastMonth)).reduce((s, t) => s + t.amount, 0);
+
+            // Category breakdown (expenses)
+            const byCategory = {};
+            txs.filter(t => t.type === 'expense').forEach(t => {
+                byCategory[t.category] = (byCategory[t.category] || 0) + t.amount;
+            });
+
+            // Monthly data (last 6 months)
+            const monthly = [];
+            for (let i = 5; i >= 0; i--) {
+                const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+                const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+                const label = d.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
+                const inc = txs.filter(t => t.type === 'income' && t.date.startsWith(key)).reduce((s, t) => s + t.amount, 0);
+                const exp = txs.filter(t => t.type === 'expense' && t.date.startsWith(key)).reduce((s, t) => s + t.amount, 0);
+                monthly.push({ key, label, income: inc, expenses: exp });
+            }
+
+            // Budgets
+            const budgets = {
+                'Food & Dining': 500, 'Transportation': 200, 'Housing': 1500,
+                'Utilities': 200, 'Entertainment': 150, 'Shopping': 300,
+                'Healthcare': 200, 'Education': 100, 'Other Expense': 200
+            };
+
+            const cmByCategory = {};
+            txs.filter(t => t.type === 'expense' && t.date.startsWith(currentMonth)).forEach(t => {
+                cmByCategory[t.category] = (cmByCategory[t.category] || 0) + t.amount;
+            });
+
+            // Recent transactions
+            const recent = [...txs].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 10);
+
+            // Average daily spending
+            const dates = txs.filter(t => t.type === 'expense').map(t => new Date(t.date));
+            let avgDaily = 0;
+            if (dates.length > 0) {
+                const minDate = new Date(Math.min(...dates));
+                const maxDate = new Date(Math.max(...dates));
+                const days = Math.max(1, Math.ceil((maxDate - minDate) / 86400000) + 1);
+                avgDaily = totalExpenses / days;
+            }
+
+            return {
+                txs, totalIncome, totalExpenses, balance, savingsRate,
+                cmIncome, cmExpenses, lmIncome, lmExpenses,
+                byCategory, monthly, budgets, cmByCategory,
+                recent, avgDaily, currentMonth, lastMonth
+            };
+        }
+
+        // Agent logic - intent matching and response generation
+        function agentRespond(userMessage) {
+            const msg = userMessage.toLowerCase().trim();
+            const data = getFinancialData();
+
+            if (data.txs.length === 0) {
+                return noDataResponse(msg);
+            }
+
+            // Intent matching
+            if (matchIntent(msg, ['summary', 'overview', 'how am i doing', 'financial health', 'status'])) {
+                return generateSummary(data);
+            }
+            if (matchIntent(msg, ['spending habit', 'spending pattern', 'analyze spending', 'where.*money go', 'spending analysis'])) {
+                return generateSpendingAnalysis(data);
+            }
+            if (matchIntent(msg, ['save', 'saving', 'cut cost', 'reduce', 'tips'])) {
+                return generateSavingsTips(data);
+            }
+            if (matchIntent(msg, ['budget', 'budget status', 'over budget', 'under budget'])) {
+                return generateBudgetStatus(data);
+            }
+            if (matchIntent(msg, ['top expense', 'biggest expense', 'most spent', 'highest spend'])) {
+                return generateTopExpenses(data);
+            }
+            if (matchIntent(msg, ['income vs expense', 'income versus', 'trend', 'income.*expense'])) {
+                return generateTrend(data);
+            }
+            if (matchIntent(msg, ['monthly breakdown', 'month by month', 'each month', 'monthly report'])) {
+                return generateMonthlyBreakdown(data);
+            }
+            if (matchIntent(msg, ['warning', 'alert', 'concern', 'risk', 'problem', 'issue'])) {
+                return generateAlerts(data);
+            }
+            if (matchIntent(msg, ['recent', 'latest', 'last transaction', 'recent transaction'])) {
+                return generateRecentTransactions(data);
+            }
+            if (matchIntent(msg, ['income', 'earning', 'earned', 'revenue'])) {
+                return generateIncomeReport(data);
+            }
+            if (matchIntent(msg, ['category', 'categories', 'breakdown'])) {
+                return generateCategoryBreakdown(data);
+            }
+            if (matchIntent(msg, ['daily', 'per day', 'average.*day', 'day.*average'])) {
+                return generateDailyAverage(data);
+            }
+            if (matchIntent(msg, ['help', 'what can you', 'how to', 'commands'])) {
+                return generateHelp();
+            }
+
+            return generateFallback(data);
+        }
+
+        function matchIntent(msg, keywords) {
+            return keywords.some(kw => {
+                if (kw.includes('.*')) {
+                    return new RegExp(kw).test(msg);
+                }
+                return msg.includes(kw);
+            });
+        }
+
+        function noDataResponse(msg) {
+            return `I don't have any transaction data to analyze yet.
+
+<div class="insight-card">
+<div class="insight-title">Getting Started</div>
+Head over to the <strong><a href="index.html" style="color:#4facfe;">Finance Dashboard</a></strong> to add your first transactions. Once you have some data, I can help you with:
+<ul>
+<li>Financial summaries and health checks</li>
+<li>Spending analysis and category breakdowns</li>
+<li>Budget tracking and alerts</li>
+<li>Personalized savings tips</li>
+<li>Monthly trend reports</li>
+</ul>
+</div>`;
+        }
+
+        function generateSummary(d) {
+            const healthScore = calculateHealthScore(d);
+            const healthLabel = healthScore >= 80 ? 'Excellent' : healthScore >= 60 ? 'Good' : healthScore >= 40 ? 'Fair' : 'Needs Attention';
+            const healthClass = healthScore >= 60 ? 'highlight-positive' : healthScore >= 40 ? 'highlight-warn' : 'highlight-negative';
+
+            let expenseChange = '';
+            if (d.lmExpenses > 0) {
+                const pct = ((d.cmExpenses - d.lmExpenses) / d.lmExpenses * 100).toFixed(1);
+                const dir = pct > 0 ? 'up' : 'down';
+                const cls = pct > 0 ? 'highlight-negative' : 'highlight-positive';
+                expenseChange = `<br>Spending is <span class="${cls}">${dir} ${Math.abs(pct)}%</span> compared to last month.`;
+            }
+
+            return `Here's your financial overview:
+
+<div class="insight-card">
+<div class="insight-title">Financial Health Score: <span class="${healthClass}">${healthScore}/100 (${healthLabel})</span></div>
+
+<table>
+<tr><th>Metric</th><th>Value</th></tr>
+<tr><td>Total Income</td><td><span class="highlight-positive">${formatCurrency(d.totalIncome)}</span></td></tr>
+<tr><td>Total Expenses</td><td><span class="highlight-negative">${formatCurrency(d.totalExpenses)}</span></td></tr>
+<tr><td>Balance</td><td><span class="highlight-info">${formatCurrency(d.balance)}</span></td></tr>
+<tr><td>Savings Rate</td><td><span class="${d.savingsRate >= 20 ? 'highlight-positive' : d.savingsRate >= 0 ? 'highlight-warn' : 'highlight-negative'}">${d.savingsRate.toFixed(1)}%</span></td></tr>
+<tr><td>This Month Income</td><td>${formatCurrency(d.cmIncome)}</td></tr>
+<tr><td>This Month Expenses</td><td>${formatCurrency(d.cmExpenses)}</td></tr>
+<tr><td>Avg Daily Spending</td><td>${formatCurrency(d.avgDaily)}</td></tr>
+<tr><td>Transactions</td><td>${d.txs.length}</td></tr>
+</table>
+${expenseChange}
+</div>
+
+${d.savingsRate < 20 ? '<strong>Tip:</strong> A savings rate of at least 20% is recommended for long-term financial health.' : '<strong>Great job!</strong> Your savings rate is above the recommended 20%.'}`;
+        }
+
+        function generateSpendingAnalysis(d) {
+            const sorted = Object.entries(d.byCategory).sort((a, b) => b[1] - a[1]);
+            const total = d.totalExpenses;
+            if (sorted.length === 0) return 'No expenses recorded yet.';
+
+            const topCategory = sorted[0];
+            const topPct = (topCategory[1] / total * 100).toFixed(1);
+
+            let tableRows = sorted.map(([cat, amt]) => {
+                const pct = (amt / total * 100).toFixed(1);
+                return `<tr><td>${cat}</td><td>${formatCurrency(amt)}</td><td>${pct}%</td></tr>`;
+            }).join('');
+
+            let insights = [];
+            if (parseFloat(topPct) > 40) {
+                insights.push(`<span class="highlight-warn">${topCategory[0]}</span> makes up ${topPct}% of your spending. Consider if this can be optimized.`);
+            }
+            if (sorted.length <= 2) {
+                insights.push('Your spending is concentrated in few categories. This could mean missing tracking in other areas.');
+            }
+
+            return `Here's your spending breakdown:
+
+<div class="insight-card">
+<div class="insight-title">Spending by Category</div>
+<table>
+<tr><th>Category</th><th>Amount</th><th>Share</th></tr>
+${tableRows}
+<tr><td><strong>Total</strong></td><td><strong>${formatCurrency(total)}</strong></td><td><strong>100%</strong></td></tr>
+</table>
+</div>
+
+Your largest spending category is <strong>${topCategory[0]}</strong> at <span class="highlight-info">${formatCurrency(topCategory[1])}</span> (${topPct}%).
+
+${insights.length > 0 ? '<div class="insight-card"><div class="insight-title">Insights</div><ul>' + insights.map(i => `<li>${i}</li>`).join('') + '</ul></div>' : ''}`;
+        }
+
+        function generateSavingsTips(d) {
+            const sorted = Object.entries(d.byCategory).sort((a, b) => b[1] - a[1]);
+            const tips = [];
+
+            sorted.forEach(([cat, amt]) => {
+                if (cat === 'Food & Dining' && amt > 300) {
+                    tips.push(`<strong>Food & Dining (${formatCurrency(amt)}):</strong> Try meal prepping, cooking at home more, and using cashback apps for groceries.`);
+                }
+                if (cat === 'Entertainment' && amt > 100) {
+                    tips.push(`<strong>Entertainment (${formatCurrency(amt)}):</strong> Look for free local events, share streaming subscriptions, and set a monthly entertainment budget.`);
+                }
+                if (cat === 'Shopping' && amt > 200) {
+                    tips.push(`<strong>Shopping (${formatCurrency(amt)}):</strong> Implement a 24-hour rule before purchases, unsubscribe from marketing emails, and track impulse buys.`);
+                }
+                if (cat === 'Transportation' && amt > 150) {
+                    tips.push(`<strong>Transportation (${formatCurrency(amt)}):</strong> Consider carpooling, public transit, or biking. Compare gas prices and maintain your vehicle regularly.`);
+                }
+                if (cat === 'Utilities' && amt > 150) {
+                    tips.push(`<strong>Utilities (${formatCurrency(amt)}):</strong> Review your plans for better rates, use energy-efficient appliances, and reduce water/electricity waste.`);
+                }
+            });
+
+            if (d.savingsRate < 20) {
+                tips.push(`<strong>Savings Rate (${d.savingsRate.toFixed(1)}%):</strong> Aim for at least 20%. Set up automatic transfers to savings right after payday.`);
+            }
+
+            if (tips.length === 0) {
+                tips.push('Your spending looks well-controlled! Consider investing any surplus into an emergency fund or retirement accounts.');
+                tips.push('Review any recurring subscriptions you may have forgotten about.');
+            }
+
+            tips.push('Use the 50/30/20 rule: 50% needs, 30% wants, 20% savings.');
+            tips.push('Track every expense for awareness - you\'re already doing this!');
+
+            return `Here are personalized savings recommendations based on your data:
+
+<div class="insight-card">
+<div class="insight-title">Savings Tips</div>
+<ol>
+${tips.map(t => `<li>${t}</li>`).join('\n')}
+</ol>
+</div>
+
+Your current savings rate is <span class="${d.savingsRate >= 20 ? 'highlight-positive' : 'highlight-warn'}">${d.savingsRate.toFixed(1)}%</span>. ${d.savingsRate >= 20 ? 'You\'re on track!' : 'Let\'s work on getting this to 20% or above.'}`;
+        }
+
+        function generateBudgetStatus(d) {
+            const entries = Object.entries(d.budgets);
+            let overBudget = [];
+            let underBudget = [];
+
+            let tableRows = entries.map(([cat, budget]) => {
+                const spent = d.cmByCategory[cat] || 0;
+                const pct = (spent / budget * 100).toFixed(0);
+                const cls = pct >= 100 ? 'highlight-negative' : pct >= 75 ? 'highlight-warn' : 'highlight-positive';
+                const status = pct >= 100 ? 'OVER' : pct >= 75 ? 'WARNING' : 'OK';
+
+                if (pct >= 100) overBudget.push(cat);
+                if (spent > 0 && pct < 50) underBudget.push(cat);
+
+                return `<tr><td>${cat}</td><td>${formatCurrency(spent)}</td><td>${formatCurrency(budget)}</td><td><span class="${cls}">${pct}% (${status})</span></td></tr>`;
+            }).join('');
+
+            let alerts = '';
+            if (overBudget.length > 0) {
+                alerts += `\n<span class="highlight-negative">Over budget:</span> ${overBudget.join(', ')}.`;
+            }
+            if (underBudget.length > 0) {
+                alerts += `\n<span class="highlight-positive">Well under budget:</span> ${underBudget.join(', ')}.`;
+            }
+
+            return `Here's your budget status for this month:
+
+<div class="insight-card">
+<div class="insight-title">Monthly Budget Tracker</div>
+<table>
+<tr><th>Category</th><th>Spent</th><th>Budget</th><th>Status</th></tr>
+${tableRows}
+</table>
+</div>
+${alerts}`;
+        }
+
+        function generateTopExpenses(d) {
+            const recent = [...d.txs]
+                .filter(t => t.type === 'expense')
+                .sort((a, b) => b.amount - a.amount)
+                .slice(0, 10);
+
+            if (recent.length === 0) return 'No expenses recorded yet.';
+
+            const rows = recent.map((t, i) => {
+                const date = new Date(t.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                return `<tr><td>${i + 1}</td><td>${escapeHtml(t.description)}</td><td>${t.category}</td><td>${date}</td><td><span class="highlight-negative">${formatCurrency(t.amount)}</span></td></tr>`;
+            }).join('');
+
+            return `Here are your largest expenses:
+
+<div class="insight-card">
+<div class="insight-title">Top 10 Expenses</div>
+<table>
+<tr><th>#</th><th>Description</th><th>Category</th><th>Date</th><th>Amount</th></tr>
+${rows}
+</table>
+</div>
+
+Your single biggest expense was <strong>${escapeHtml(recent[0].description)}</strong> at <span class="highlight-negative">${formatCurrency(recent[0].amount)}</span>.`;
+        }
+
+        function generateTrend(d) {
+            const rows = d.monthly.map(m => {
+                const net = m.income - m.expenses;
+                const cls = net >= 0 ? 'highlight-positive' : 'highlight-negative';
+                return `<tr><td>${m.label}</td><td><span class="highlight-positive">${formatCurrency(m.income)}</span></td><td><span class="highlight-negative">${formatCurrency(m.expenses)}</span></td><td><span class="${cls}">${net >= 0 ? '+' : '-'}${formatCurrency(net)}</span></td></tr>`;
+            }).join('');
+
+            const totalNet = d.totalIncome - d.totalExpenses;
+            const trendDir = d.cmExpenses > d.lmExpenses ? 'increasing' : d.cmExpenses < d.lmExpenses ? 'decreasing' : 'stable';
+
+            return `Here's your income vs expenses trend:
+
+<div class="insight-card">
+<div class="insight-title">6-Month Trend</div>
+<table>
+<tr><th>Month</th><th>Income</th><th>Expenses</th><th>Net</th></tr>
+${rows}
+</table>
+</div>
+
+Your overall net position is <span class="${totalNet >= 0 ? 'highlight-positive' : 'highlight-negative'}">${totalNet >= 0 ? '+' : '-'}${formatCurrency(totalNet)}</span>. Spending is currently <strong>${trendDir}</strong>.`;
+        }
+
+        function generateMonthlyBreakdown(d) {
+            const rows = d.monthly.map(m => {
+                const savings = m.income > 0 ? ((m.income - m.expenses) / m.income * 100).toFixed(1) : '0.0';
+                const cls = parseFloat(savings) >= 20 ? 'highlight-positive' : parseFloat(savings) >= 0 ? 'highlight-warn' : 'highlight-negative';
+                return `<tr><td>${m.label}</td><td>${formatCurrency(m.income)}</td><td>${formatCurrency(m.expenses)}</td><td><span class="${cls}">${savings}%</span></td></tr>`;
+            }).join('');
+
+            return `Here's your month-by-month breakdown:
+
+<div class="insight-card">
+<div class="insight-title">Monthly Report (Last 6 Months)</div>
+<table>
+<tr><th>Month</th><th>Income</th><th>Expenses</th><th>Savings Rate</th></tr>
+${rows}
+</table>
+</div>
+
+Target savings rate: <span class="highlight-info">20%+</span> per month for healthy finances.`;
+        }
+
+        function generateAlerts(d) {
+            const alerts = [];
+
+            // Over budget alerts
+            Object.entries(d.budgets).forEach(([cat, budget]) => {
+                const spent = d.cmByCategory[cat] || 0;
+                if (spent > budget) {
+                    alerts.push({ level: 'negative', msg: `<strong>${cat}</strong> is over budget: ${formatCurrency(spent)} / ${formatCurrency(budget)} (${((spent/budget)*100).toFixed(0)}%)` });
+                } else if (spent > budget * 0.8) {
+                    alerts.push({ level: 'warn', msg: `<strong>${cat}</strong> is approaching budget limit: ${formatCurrency(spent)} / ${formatCurrency(budget)}` });
+                }
+            });
+
+            // Negative balance
+            if (d.balance < 0) {
+                alerts.push({ level: 'negative', msg: `Your balance is <strong>negative</strong> (${formatCurrency(d.balance)}). You're spending more than you earn.` });
+            }
+
+            // Low savings rate
+            if (d.savingsRate < 10 && d.totalIncome > 0) {
+                alerts.push({ level: 'warn', msg: `Savings rate is only <strong>${d.savingsRate.toFixed(1)}%</strong>. Aim for at least 20%.` });
+            }
+
+            // Spending increase
+            if (d.lmExpenses > 0 && d.cmExpenses > d.lmExpenses * 1.2) {
+                const pct = ((d.cmExpenses - d.lmExpenses) / d.lmExpenses * 100).toFixed(0);
+                alerts.push({ level: 'warn', msg: `Spending is up <strong>${pct}%</strong> compared to last month.` });
+            }
+
+            // High concentration
+            const sorted = Object.entries(d.byCategory).sort((a, b) => b[1] - a[1]);
+            if (sorted.length > 0 && d.totalExpenses > 0) {
+                const topPct = sorted[0][1] / d.totalExpenses * 100;
+                if (topPct > 50) {
+                    alerts.push({ level: 'warn', msg: `<strong>${sorted[0][0]}</strong> accounts for ${topPct.toFixed(0)}% of all spending. Consider diversifying or reducing.` });
+                }
+            }
+
+            if (alerts.length === 0) {
+                return `<div class="insight-card">
+<div class="insight-title"><span class="highlight-positive">All Clear!</span></div>
+No financial warnings at this time. Your finances look healthy. Keep it up!
+</div>`;
+            }
+
+            const alertHtml = alerts.map(a =>
+                `<li><span class="highlight-${a.level}">${a.level === 'negative' ? 'ALERT' : 'WARNING'}:</span> ${a.msg}</li>`
+            ).join('\n');
+
+            return `I found ${alerts.length} financial alert${alerts.length > 1 ? 's' : ''}:
+
+<div class="insight-card">
+<div class="insight-title">Financial Alerts</div>
+<ul>
+${alertHtml}
+</ul>
+</div>
+
+Review these items and take action where needed.`;
+        }
+
+        function generateRecentTransactions(d) {
+            if (d.recent.length === 0) return 'No transactions recorded yet.';
+
+            const rows = d.recent.map(t => {
+                const date = new Date(t.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                const cls = t.type === 'income' ? 'highlight-positive' : 'highlight-negative';
+                const sign = t.type === 'income' ? '+' : '-';
+                return `<tr><td>${date}</td><td>${escapeHtml(t.description)}</td><td>${t.category}</td><td><span class="${cls}">${sign}${formatCurrency(t.amount)}</span></td></tr>`;
+            }).join('');
+
+            return `Here are your most recent transactions:
+
+<div class="insight-card">
+<div class="insight-title">Last ${d.recent.length} Transactions</div>
+<table>
+<tr><th>Date</th><th>Description</th><th>Category</th><th>Amount</th></tr>
+${rows}
+</table>
+</div>`;
+        }
+
+        function generateIncomeReport(d) {
+            const incomes = d.txs.filter(t => t.type === 'income');
+            if (incomes.length === 0) return 'No income recorded yet.';
+
+            const bySource = {};
+            incomes.forEach(t => {
+                bySource[t.category] = (bySource[t.category] || 0) + t.amount;
+            });
+
+            const sorted = Object.entries(bySource).sort((a, b) => b[1] - a[1]);
+            const rows = sorted.map(([cat, amt]) => {
+                const pct = (amt / d.totalIncome * 100).toFixed(1);
+                return `<tr><td>${cat}</td><td><span class="highlight-positive">${formatCurrency(amt)}</span></td><td>${pct}%</td></tr>`;
+            }).join('');
+
+            return `Here's your income breakdown:
+
+<div class="insight-card">
+<div class="insight-title">Income Sources</div>
+<table>
+<tr><th>Source</th><th>Amount</th><th>Share</th></tr>
+${rows}
+<tr><td><strong>Total</strong></td><td><strong><span class="highlight-positive">${formatCurrency(d.totalIncome)}</span></strong></td><td><strong>100%</strong></td></tr>
+</table>
+</div>
+
+${sorted.length === 1 ? '<span class="highlight-warn">Your income comes from a single source. Consider diversifying for financial resilience.</span>' : `You have ${sorted.length} income sources, which provides good diversification.`}`;
+        }
+
+        function generateCategoryBreakdown(d) {
+            return generateSpendingAnalysis(d);
+        }
+
+        function generateDailyAverage(d) {
+            return `Your average daily spending is <span class="highlight-info">${formatCurrency(d.avgDaily)}</span>.
+
+<div class="insight-card">
+<div class="insight-title">Daily Spending Context</div>
+<ul>
+<li>Monthly equivalent: ~<strong>${formatCurrency(d.avgDaily * 30)}</strong></li>
+<li>Yearly projection: ~<strong>${formatCurrency(d.avgDaily * 365)}</strong></li>
+<li>Total expenses so far: <strong>${formatCurrency(d.totalExpenses)}</strong></li>
+</ul>
+</div>
+
+${d.avgDaily > 50 ? 'Consider setting a daily spending cap to stay within budget.' : 'Your daily spending looks reasonable. Keep tracking!'}`;
+        }
+
+        function generateHelp() {
+            return `I'm your personal finance assistant. Here's what I can help with:
+
+<div class="insight-card">
+<div class="insight-title">Available Commands</div>
+<ul>
+<li><strong>"Financial summary"</strong> - Overall health check with key metrics</li>
+<li><strong>"Spending analysis"</strong> - Detailed breakdown of where your money goes</li>
+<li><strong>"Savings tips"</strong> - Personalized recommendations to save more</li>
+<li><strong>"Budget status"</strong> - Track spending against monthly budgets</li>
+<li><strong>"Top expenses"</strong> - Your largest individual transactions</li>
+<li><strong>"Income vs expenses"</strong> - Monthly trend comparison</li>
+<li><strong>"Monthly breakdown"</strong> - Month-by-month report</li>
+<li><strong>"Financial warnings"</strong> - Alerts about potential issues</li>
+<li><strong>"Recent transactions"</strong> - Latest activity</li>
+<li><strong>"Income report"</strong> - Income sources breakdown</li>
+<li><strong>"Daily average"</strong> - Average daily spending analysis</li>
+</ul>
+</div>
+
+You can also use the <strong>Quick Actions</strong> in the sidebar, or just ask me anything about your finances in plain language!`;
+        }
+
+        function generateFallback(d) {
+            const healthScore = calculateHealthScore(d);
+            return `I'm not sure exactly what you're asking, but here's a quick snapshot:
+
+<div class="insight-card">
+<div class="insight-title">Quick Snapshot</div>
+<ul>
+<li>Balance: <span class="highlight-info">${formatCurrency(d.balance)}</span></li>
+<li>This month's spending: <span class="highlight-negative">${formatCurrency(d.cmExpenses)}</span></li>
+<li>Savings rate: <span class="${d.savingsRate >= 20 ? 'highlight-positive' : 'highlight-warn'}">${d.savingsRate.toFixed(1)}%</span></li>
+<li>Health score: <strong>${healthScore}/100</strong></li>
+</ul>
+</div>
+
+Try asking about your <strong>summary</strong>, <strong>spending</strong>, <strong>budget</strong>, <strong>savings tips</strong>, or type <strong>"help"</strong> to see all available commands.`;
+        }
+
+        function calculateHealthScore(d) {
+            let score = 50;
+
+            // Savings rate contribution (0-30 points)
+            if (d.savingsRate >= 30) score += 30;
+            else if (d.savingsRate >= 20) score += 25;
+            else if (d.savingsRate >= 10) score += 15;
+            else if (d.savingsRate >= 0) score += 5;
+            else score -= 10;
+
+            // Budget adherence (0-20 points)
+            let overCount = 0;
+            Object.entries(d.budgets).forEach(([cat, budget]) => {
+                if ((d.cmByCategory[cat] || 0) > budget) overCount++;
+            });
+            score += Math.max(0, 20 - overCount * 5);
+
+            // Spending trend (±10 points)
+            if (d.lmExpenses > 0) {
+                if (d.cmExpenses < d.lmExpenses) score += 10;
+                else if (d.cmExpenses > d.lmExpenses * 1.2) score -= 10;
+            }
+
+            return Math.max(0, Math.min(100, score));
+        }
+
+        function escapeHtml(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        // UI handling
+        function addMessage(content, type) {
+            const messages = document.getElementById('messages');
+            const avatar = type === 'agent' ? 'FA' : 'You';
+
+            const div = document.createElement('div');
+            div.className = `message ${type}`;
+            div.innerHTML = `
+                <div class="message-avatar">${avatar}</div>
+                <div class="message-bubble">${content}</div>
+            `;
+            messages.appendChild(div);
+            messages.scrollTop = messages.scrollHeight;
+        }
+
+        function showTyping() {
+            const messages = document.getElementById('messages');
+            const div = document.createElement('div');
+            div.className = 'message agent';
+            div.id = 'typing-msg';
+            div.innerHTML = `
+                <div class="message-avatar">FA</div>
+                <div class="message-bubble">
+                    <div class="typing-indicator">
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                    </div>
+                </div>
+            `;
+            messages.appendChild(div);
+            messages.scrollTop = messages.scrollHeight;
+        }
+
+        function removeTyping() {
+            const el = document.getElementById('typing-msg');
+            if (el) el.remove();
+        }
+
+        function handleSend() {
+            const input = document.getElementById('chat-input');
+            const msg = input.value.trim();
+            if (!msg) return;
+
+            addMessage(escapeHtml(msg), 'user');
+            input.value = '';
+            input.style.height = 'auto';
+
+            showTyping();
+
+            // Simulate brief thinking delay
+            const delay = 300 + Math.random() * 500;
+            setTimeout(() => {
+                removeTyping();
+                const response = agentRespond(msg);
+                addMessage(response, 'agent');
+                updateSidebar();
+            }, delay);
+        }
+
+        function sendQuickAction(text) {
+            document.getElementById('chat-input').value = text;
+            handleSend();
+        }
+
+        function updateSidebar() {
+            const data = getFinancialData();
+            document.getElementById('side-income').textContent = formatCurrency(data.totalIncome);
+            document.getElementById('side-expenses').textContent = formatCurrency(data.totalExpenses);
+            document.getElementById('side-balance').textContent = formatCurrency(data.balance);
+            document.getElementById('side-count').textContent = data.txs.length;
+        }
+
+        // Auto-resize textarea
+        const chatInput = document.getElementById('chat-input');
+        chatInput.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+        });
+
+        chatInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleSend();
+            }
+        });
+
+        // Init
+        function init() {
+            updateSidebar();
+            addMessage(`Welcome! I'm your <strong>Finance Agent</strong> — a personal AI assistant for analyzing your financial data.
+
+<div class="insight-card">
+<div class="insight-title">What I Can Do</div>
+<ul>
+<li>Analyze your spending patterns and habits</li>
+<li>Track budgets and alert you to overspending</li>
+<li>Provide personalized savings recommendations</li>
+<li>Generate financial health reports</li>
+<li>Show trends and monthly breakdowns</li>
+</ul>
+</div>
+
+Try asking me for a <strong>financial summary</strong>, or use the quick actions in the sidebar to get started!`, 'agent');
+        }
+
+        init();
+    </script>
+</body>
+</html>
