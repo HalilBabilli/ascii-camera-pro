@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Error <%= code %></title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0f0f1a;
+            color: #e0e0e0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .error-page {
+            text-align: center;
+            padding: 40px;
+        }
+        .error-code {
+            font-size: 4rem;
+            font-weight: 700;
+            color: #ff5252;
+            margin-bottom: 10px;
+        }
+        .error-msg {
+            font-size: 1.1rem;
+            color: #888;
+            margin-bottom: 24px;
+        }
+        a {
+            color: #4facfe;
+            text-decoration: none;
+        }
+        a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="error-page">
+        <div class="error-code"><%= code %></div>
+        <div class="error-msg"><%= message %></div>
+        <a href="/">Go Home</a>
+    </div>
+</body>
+</html>

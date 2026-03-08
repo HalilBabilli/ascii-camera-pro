@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0f0f1a;
+            color: #e0e0e0;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            padding: 16px 24px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 1.3rem;
+            background: linear-gradient(90deg, #4facfe, #00f2fe);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            font-size: 0.85rem;
+        }
+
+        .header-right a {
+            color: #ff5252;
+            text-decoration: none;
+        }
+
+        .header-right a:hover { text-decoration: underline; }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        /* Stats */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: #1a1a2e;
+            border-radius: 10px;
+            padding: 16px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .stat-number {
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+
+        .stat-number.new { color: #4facfe; }
+        .stat-number.read { color: #ffab40; }
+        .stat-number.replied { color: #00e676; }
+        .stat-number.archived { color: #666; }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 4px;
+        }
+
+        /* Filters */
+        .filters {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: transparent;
+            color: #888;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-family: inherit;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .filter-btn:hover {
+            background: rgba(79, 172, 254, 0.1);
+            color: #4facfe;
+        }
+
+        .filter-btn.active {
+            background: rgba(79, 172, 254, 0.15);
+            color: #4facfe;
+            border-color: #4facfe;
+        }
+
+        /* Question Cards */
+        .question-card {
+            background: #1a1a2e;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .question-card.status-new {
+            border-left: 3px solid #4facfe;
+        }
+
+        .question-card.status-read {
+            border-left: 3px solid #ffab40;
+        }
+
+        .question-card.status-replied {
+            border-left: 3px solid #00e676;
+        }
+
+        .question-card.status-archived {
+            border-left: 3px solid #444;
+            opacity: 0.7;
+        }
+
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 10px;
+            gap: 12px;
+        }
+
+        .question-subject {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: #ddd;
+        }
+
+        .question-status {
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            flex-shrink: 0;
+        }
+
+        .status-badge-new { background: rgba(79, 172, 254, 0.15); color: #4facfe; }
+        .status-badge-read { background: rgba(255, 171, 64, 0.15); color: #ffab40; }
+        .status-badge-replied { background: rgba(0, 230, 118, 0.15); color: #00e676; }
+        .status-badge-archived { background: rgba(255, 255, 255, 0.05); color: #666; }
+
+        .question-meta {
+            font-size: 0.8rem;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .question-meta strong {
+            color: #999;
+        }
+
+        .question-body {
+            font-size: 0.9rem;
+            line-height: 1.6;
+            color: #bbb;
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            margin-bottom: 12px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .question-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .action-btn {
+            padding: 6px 14px;
+            border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: transparent;
+            color: #888;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-family: inherit;
+            transition: all 0.2s;
+        }
+
+        .action-btn:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: #ccc;
+        }
+
+        .action-btn.mark-read { border-color: rgba(255, 171, 64, 0.3); color: #ffab40; }
+        .action-btn.mark-replied { border-color: rgba(0, 230, 118, 0.3); color: #00e676; }
+        .action-btn.mark-archived { border-color: rgba(255, 255, 255, 0.1); color: #666; }
+        .action-btn.delete { border-color: rgba(255, 82, 82, 0.3); color: #ff5252; }
+
+        .notes-form {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+            align-items: flex-start;
+        }
+
+        .notes-form textarea {
+            flex: 1;
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: #0f0f1a;
+            color: #e0e0e0;
+            font-size: 0.85rem;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        .notes-form textarea:focus {
+            outline: none;
+            border-color: #4facfe;
+        }
+
+        .notes-form button {
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: none;
+            background: rgba(79, 172, 254, 0.2);
+            color: #4facfe;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-family: inherit;
+            white-space: nowrap;
+        }
+
+        .admin-notes {
+            margin-top: 10px;
+            padding: 10px 12px;
+            background: rgba(79, 172, 254, 0.05);
+            border: 1px solid rgba(79, 172, 254, 0.1);
+            border-radius: 8px;
+            font-size: 0.85rem;
+            color: #8bb8e0;
+        }
+
+        .admin-notes-label {
+            font-size: 0.7rem;
+            color: #4facfe;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        /* Pagination */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 24px;
+        }
+
+        .page-btn {
+            padding: 8px 14px;
+            border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: transparent;
+            color: #888;
+            text-decoration: none;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+
+        .page-btn:hover { background: rgba(79, 172, 254, 0.1); color: #4facfe; }
+        .page-btn.active { background: rgba(79, 172, 254, 0.15); color: #4facfe; border-color: #4facfe; }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #555;
+        }
+
+        .empty-state h2 {
+            color: #666;
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Admin Dashboard</h1>
+        <div class="header-right">
+            <span style="color:#666;"><%= adminEmail %></span>
+            <a href="/admin/logout">Logout</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Stats -->
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-number" style="color:#4facfe;"><%= stats.total %></div>
+                <div class="stat-label">Total</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number new"><%= stats.new_count %></div>
+                <div class="stat-label">New</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number read"><%= stats.read_count %></div>
+                <div class="stat-label">Read</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number replied"><%= stats.replied_count %></div>
+                <div class="stat-label">Replied</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number archived"><%= stats.archived_count %></div>
+                <div class="stat-label">Archived</div>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="filters">
+            <a href="/admin?status=all" class="filter-btn <%= currentStatus === 'all' ? 'active' : '' %>">All</a>
+            <a href="/admin?status=new" class="filter-btn <%= currentStatus === 'new' ? 'active' : '' %>">New</a>
+            <a href="/admin?status=read" class="filter-btn <%= currentStatus === 'read' ? 'active' : '' %>">Read</a>
+            <a href="/admin?status=replied" class="filter-btn <%= currentStatus === 'replied' ? 'active' : '' %>">Replied</a>
+            <a href="/admin?status=archived" class="filter-btn <%= currentStatus === 'archived' ? 'active' : '' %>">Archived</a>
+        </div>
+
+        <!-- Questions -->
+        <% if (questions.length === 0) { %>
+            <div class="empty-state">
+                <h2>No questions yet</h2>
+                <p>Client questions will appear here when submitted.</p>
+            </div>
+        <% } else { %>
+            <% questions.forEach(q => { %>
+                <div class="question-card status-<%= q.status %>">
+                    <div class="question-header">
+                        <div class="question-subject"><%= q.subject %></div>
+                        <span class="question-status status-badge-<%= q.status %>"><%= q.status %></span>
+                    </div>
+                    <div class="question-meta">
+                        <strong><%= q.client_name %></strong> &lt;<%= q.client_email %>&gt;
+                        &middot;
+                        <%= new Date(q.created_at).toLocaleString() %>
+                    </div>
+                    <div class="question-body"><%= q.message %></div>
+
+                    <% if (q.admin_notes) { %>
+                        <div class="admin-notes">
+                            <div class="admin-notes-label">Admin Notes</div>
+                            <%= q.admin_notes %>
+                        </div>
+                    <% } %>
+
+                    <div class="question-actions">
+                        <% if (q.status !== 'read') { %>
+                            <form method="POST" action="/admin/questions/<%= q.id %>/status" style="display:inline;">
+                                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                                <input type="hidden" name="status" value="read">
+                                <button type="submit" class="action-btn mark-read">Mark Read</button>
+                            </form>
+                        <% } %>
+                        <% if (q.status !== 'replied') { %>
+                            <form method="POST" action="/admin/questions/<%= q.id %>/status" style="display:inline;">
+                                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                                <input type="hidden" name="status" value="replied">
+                                <button type="submit" class="action-btn mark-replied">Mark Replied</button>
+                            </form>
+                        <% } %>
+                        <% if (q.status !== 'archived') { %>
+                            <form method="POST" action="/admin/questions/<%= q.id %>/status" style="display:inline;">
+                                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                                <input type="hidden" name="status" value="archived">
+                                <button type="submit" class="action-btn mark-archived">Archive</button>
+                            </form>
+                        <% } %>
+                        <form method="POST" action="/admin/questions/<%= q.id %>/delete" style="display:inline;"
+                              onsubmit="return confirm('Delete this question permanently?');">
+                            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                            <button type="submit" class="action-btn delete">Delete</button>
+                        </form>
+                    </div>
+
+                    <form method="POST" action="/admin/questions/<%= q.id %>/notes" class="notes-form">
+                        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                        <textarea name="notes" placeholder="Add admin notes..."><%= q.admin_notes || '' %></textarea>
+                        <button type="submit">Save Notes</button>
+                    </form>
+                </div>
+            <% }); %>
+        <% } %>
+
+        <!-- Pagination -->
+        <% if (totalPages > 1) { %>
+            <div class="pagination">
+                <% for (let p = 1; p <= totalPages; p++) { %>
+                    <a href="/admin?status=<%= currentStatus %>&page=<%= p %>"
+                       class="page-btn <%= p === page ? 'active' : '' %>"><%= p %></a>
+                <% } %>
+            </div>
+        <% } %>
+    </div>
+</body>
+</html>
